@@ -31,7 +31,7 @@ jobs:
         run: echo "IMAGE_ID=$(echo ${{ env.IMAGE_NAME }} | tr '[:upper:]' '[:lower:]')" >> $GITHUB_OUTPUT
 
       - name: Build y Push image
-        uses: docker/build-push-action@v1
+        uses: docker/build-push-action@v5
         with:
           context: .
           push: true
@@ -44,8 +44,15 @@ jobs:
           echo "${{ secrets.VPS_PASSWORD }}"
           echo "${{ secrets.VPS_SSH_PORT }}"
 
-      - name: Diagnostico Local
-        run: |
-          hostname
-          whoami
-          uptime
+      - name: SSH VPS Diagnostico
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.VPS_HOST }}
+          username: ${{ secrets.VPS_USER }}
+          password: ${{ secrets.VPS_PASSWORD }}
+          port: ${{ secrets.VPS_SSH_PORT }}
+          script: |
+            pwd
+            hostname
+            whoami
+            uptime
