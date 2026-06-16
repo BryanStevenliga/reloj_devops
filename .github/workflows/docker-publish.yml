@@ -37,11 +37,6 @@ jobs:
           push: true
           tags: ${{ env.REGISTRY }}/${{ steps.string.outputs.IMAGE_ID }}:latest
 
-  deploy:
-    runs-on: ubuntu-latest
-    needs: build-and-push 
-
-    steps:
       - name: Variables locales
         run: |
           echo "${{ secrets.VPS_HOST }}"
@@ -49,21 +44,8 @@ jobs:
           echo "${{ secrets.VPS_PASSWORD }}"
           echo "${{ secrets.VPS_SSH_PORT }}"
 
-      - name: SSH VPS
-        uses: appleboy/ssh-action@v1.0.3
-        with:
-          host: ${{ secrets.VPS_HOST }}
-          username: ${{ secrets.VPS_USER }}
-          password: ${{ secrets.VPS_PASSWORD }}
-          port: ${{ secrets.VPS_SSH_PORT }}
-          script: |
-            hostname
-            whoami
-            uptime
-            if [ ! -d "/home/0504786674/PRACTICA-DEVOPS" ]; then
-              git clone https://github.com/BryanStevenliga/PRACTICA-DEVOPS.git /home/0504786674/PRACTICA-DEVOPS
-            fi
-            cd /home/0504786674/PRACTICA-DEVOPS
-            git pull origin main
-            docker compose down
-            docker compose up -d --build
+      - name: Diagnostico Local
+        run: |
+          hostname
+          whoami
+          uptime
