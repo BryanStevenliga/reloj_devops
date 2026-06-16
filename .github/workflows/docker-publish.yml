@@ -16,21 +16,21 @@ jobs:
       packages: write
 
     steps:
-      - name: Descargar código
+      - name: Descargar codigo
         uses: actions/checkout@v4
 
-      - name: Iniciar sesión en GitHub Container Registry
+      - name: Login GHCR
         uses: docker/login-action@v3
         with:
           registry: ${{ env.REGISTRY }}
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Convertir nombre a minúsculas
+      - name: Formatear nombre
         id: string
         run: echo "IMAGE_ID=$(echo ${{ env.IMAGE_NAME }} | tr '[:upper:]' '[:lower:]')" >> $GITHUB_OUTPUT
 
-      - name: Construir y subir imagen de Docker
+      - name: Build y Push image
         uses: docker/build-push-action@v5
         with:
           context: .
@@ -42,14 +42,14 @@ jobs:
     needs: build-and-push 
 
     steps:
-      - name: mostrar variables solo locales 
+      - name: Variables locales
         run: |
-          echo "host: ${{ secrets.VPS_HOST }}"
-          echo "username: ${{ secrets.VPS_USER }}"
-          echo "password: ${{ secrets.VPS_PASSWORD }}"
-          echo "port: ${{ secrets.VPS_SSH_PORT }}"
+          echo "${{ secrets.VPS_HOST }}"
+          echo "${{ secrets.VPS_USER }}"
+          echo "${{ secrets.VPS_PASSWORD }}"
+          echo "${{ secrets.VPS_SSH_PORT }}"
 
-      - name: probar la ssh en el vps 
+      - name: SSH VPS
         uses: appleboy/ssh-action@v1.0.3
         with:
           host: ${{ secrets.VPS_HOST }}
@@ -57,9 +57,13 @@ jobs:
           password: ${{ secrets.VPS_PASSWORD }}
           port: ${{ secrets.VPS_SSH_PORT }}
           script: |
-            echo "provando conexion en el vps"
-            mkdir -p ~/despliegue
-            cd ~/despliegue
             hostname
             whoami
             uptime
+            if [ ! -d "/home/0504786674/PRACTICA-DEVOPS" ]; then
+              git clone https://github.com/BryanStevenliga/PRACTICA-DEVOPS.git /home/0504786674/PRACTICA-DEVOPS
+            fi
+            cd /home/0504786674/PRACTICA-DEVOPS
+            git pull origin main
+            docker compose down
+            docker compose up -d --build
