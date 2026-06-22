@@ -56,3 +56,5 @@ jobs:
             hostname
             whoami
             uptime
+            touch quintoa.txt
+            echo "probado ssh en el vps" >> quintoa.txt
