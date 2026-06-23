@@ -67,4 +67,26 @@ jobs:
           password: ${{ secrets.VPS_PASSWORD }}
           port: ${{ secrets.VPS_SSH_PORT }}
           source: "stack.yml,makefile"
-          target: "/home/${{ secrets.VPS_USER }}/landinga"  
+          target: "/home/${{ secrets.VPS_USER }}/landinga"
+
+      - name: Despliegue directo de los servicios
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.VPS_HOST }}
+          username: ${{ secrets.VPS_USER }}
+          password: ${{ secrets.VPS_PASSWORD }}
+          port: ${{ secrets.VPS_SSH_PORT }}
+          script: |
+            cd /home/${{ secrets.VPS_USER }}/landinga
+            
+            # Login en el VPS usando tu Token de acceso de GitHub
+            echo "${{ secrets.GHCR_PAT }}" | docker login ghcr.io -u ${{ github.actor }} --password-stdin
+            
+            # Descargar la imagen nueva directamente
+            docker pull ghcr.io/${{ steps.string.outputs.IMAGE_ID }}:latest
+            
+            # Desplegar/Actualizar directamente encima (sin borrar el anterior, como dice tu profesor)
+            docker stack deploy -c stack.yml --with-registry-auth reloj_stack
+            
+            # Verificación en consola
+            docker service ls
